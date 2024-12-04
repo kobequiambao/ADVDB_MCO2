@@ -7,6 +7,7 @@ const PORT = 3000;
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../Front-end/public')));
+app.use(express.json()); // Middleware to parse JSON data
 
 // Route for the homepage (index.html)
 app.get('/', (req, res) => {
@@ -20,7 +21,7 @@ app.get('/node1', async (req, res) => {
         host: 'localhost',
         user: 'root',
 //      password: 'rootpass',
-        password: 1234,
+        password: '1234',
         database: 'steamgames',
         port: 3307 // Node 1
     });
@@ -69,7 +70,7 @@ app.get('/node2', async (req, res) => {
         host: 'localhost',
         user: 'root',
 //      password: 'rootpass',
-        password: 1234,
+        password: '1234',
         database: 'steamgames',
         port: 3308 // Node 2
     });
@@ -91,7 +92,7 @@ app.get('/node3', async (req, res) => {
         host: 'localhost',
         user: 'root',
 //      password: 'rootpass',
-        password: 1234,
+        password: '1234',
         database: 'steamgames',
         port: 3309 // Node 3
     });
@@ -106,6 +107,59 @@ app.get('/node3', async (req, res) => {
     });
 
     connection.end();
+});
+
+app.post('/add', (req, res) => {
+    const { app_id, name, price, about_the_game, windows, mac, linux } = req.body;
+
+    if (!app_id || !name || price === undefined) {
+        return res.status(400).json({ message: 'Required fields are missing.' });
+    }
+
+    let secondNodePort = price <= 10 ? 3308 : 3309;
+
+    const node1Config = {
+        host: 'localhost',
+        user: 'root',
+        password: '1234', // Fix: password as a string
+        database: 'steamgames',
+        port: 3307 // Node 1
+    };
+
+    const secondNodeConfig = {
+        host: 'localhost',
+        user: 'root',
+        password: '1234', // Fix: password as a string
+        database: 'steamgames',
+        port: secondNodePort
+    };
+
+    const query = `
+        INSERT INTO games (app_id, name, price, about_the_game, windows, mac, linux)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [app_id, name, price, about_the_game, windows, mac, linux];
+
+    const executeQuery = (config, callback) => {
+        const connection = mysql.createConnection(config);
+        connection.query(query, values, (err, results) => {
+            callback(err, results);
+        });
+        connection.end();
+    };
+
+    executeQuery(node1Config, (err1) => {
+        if (err1) return res.status(500).json({ message: `Error on Node 1: ${err1.message}` });
+
+        executeQuery(secondNodeConfig, (err2) => {
+            if (err2) {
+                return res.status(500).json({ message: `Error on secondary node: ${err2.message}` });
+            }
+
+            res.json({ message: 'Game added successfully to both nodes.' });
+        });
+    });
 });
 
 // Server listening on the specified port

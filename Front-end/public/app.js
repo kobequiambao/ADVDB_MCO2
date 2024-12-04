@@ -53,3 +53,34 @@ document.getElementById('node3-update-form').addEventListener('submit', (event) 
 document.getElementById('fetch-node1').addEventListener('click', () => fetchGames('node1'));
 document.getElementById('fetch-node2').addEventListener('click', () => fetchGames('node2'));
 document.getElementById('fetch-node3').addEventListener('click', () => fetchGames('node3'));
+
+async function addGame(event) {
+    event.preventDefault(); // Prevent form submission default behavior
+
+    const app_id = document.getElementById('app_id').value;
+    const name = document.getElementById('name').value;
+    const price = parseFloat(document.getElementById('price').value);
+    const about_the_game = document.getElementById('about_the_game').value;
+    const windows = parseInt(document.getElementById('windows').value);
+    const linux = parseInt(document.getElementById('linux').value);
+    const mac = parseInt(document.getElementById('mac').value);
+
+    const gameData = { app_id, name, price, about_the_game, windows, linux, mac };
+
+    try {
+        const response = await fetch('/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(gameData)
+        });
+
+        const result = await response.json();
+        document.getElementById('output').innerHTML = `
+            <p>${result.message}</p>
+        `;
+    } catch (error) {
+        document.getElementById('output').innerHTML = `
+            <p style="color: red;">Error adding game: ${error.message}</p>
+        `;
+    }
+}
