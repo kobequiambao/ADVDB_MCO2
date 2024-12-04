@@ -19,7 +19,8 @@ app.get('/node1', async (req, res) => {
     const connection = mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'rootpass',
+//      password: 'rootpass',
+        password: 1234,
         database: 'steamgames',
         port: 3307 // Node 1
     });
@@ -67,7 +68,8 @@ app.get('/node2', async (req, res) => {
     const connection = mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'rootpass',
+//      password: 'rootpass',
+        password: 1234,
         database: 'steamgames',
         port: 3308 // Node 2
     });
@@ -88,7 +90,8 @@ app.get('/node3', async (req, res) => {
     const connection = mysql.createConnection({
         host: 'localhost',
         user: 'root',
-        password: 'rootpass',
+//      password: 'rootpass',
+        password: 1234,
         database: 'steamgames',
         port: 3309 // Node 3
     });
